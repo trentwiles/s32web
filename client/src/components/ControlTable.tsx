@@ -41,6 +41,17 @@ const getParentDirectory = (path: string) => {
   return parent === "" ? "/" : parent;
 };
 
+const formatBytes = (bytes: number, decimals = 2) => {
+  if (bytes === 0) return "0 B";
+
+  const k = 1024;
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  const value = bytes / Math.pow(k, i);
+  return `${parseFloat(value.toFixed(decimals))} ${units[i]}`;
+};
+
 const getJustFileName = (filePath: string) => {
   if (!filePath || !filePath.includes("/")) {
     return filePath;
@@ -66,8 +77,14 @@ export default function ControlTable() {
   const [dataFiles, setDataFiles] = useState<file[]>([]);
   const [loadtime, setLoadtime] = useState(-1);
 
+
   useEffect(() => {
-    document.title = `Viewing ~/${path}`
+    document.title = `Viewing ~/${path}`;
+
+    let folderPath = path
+    if (folderPath !== "") {
+      folderPath = folderPath + "/"
+    }
 
     const start: number = Date.now();
     setIsPending(true);
@@ -76,7 +93,7 @@ export default function ControlTable() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ folder: path }),
+      body: JSON.stringify( { folder: folderPath } ),
     })
       .then((response) => response.json())
       .then((data) => {
@@ -106,8 +123,13 @@ export default function ControlTable() {
 
       <Table>
         <TableCaption>
-          {!isPending &&
-            `Discovered ${dataFolders.length} folder(s) and ${dataFiles.length} file(s) in ${loadtime}ms`}
+          {!isPending && (
+            <span>
+              Discovered {dataFolders.length} folder(s) and {dataFiles.length}{" "}
+              file(s) in {loadtime}ms &#x2022; Source available on{" "}
+              <a href="https://github.com/trentwiles/s32web">Github</a>
+            </span>
+          )}
         </TableCaption>
         <TableHeader>
           <TableRow>
@@ -138,28 +160,41 @@ export default function ControlTable() {
               </TableRow>
             ))}
           {!isPending && (
+            <TableRow key={0}>
+              <TableCell>
+                {getParentDirectory(path).length == 1 ? (
+                  <Link to={`/`}>[...]</Link>
+                ) : (
+                  <Link to={`/${getParentDirectory(path)}`}>[...]</Link>
+                )}
+              </TableCell>
+              <TableCell className="hidden sm:table-cell">...</TableCell>
+              <TableCell className="hidden sm:table-cell">...</TableCell>
+              <TableCell className="hidden sm:table-cell">...</TableCell>
+            </TableRow>
+          )}
+          {!isPending && (
             <>
-              {dataFolders.length > 0 ? (
-                dataFolders.map((folderName, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <Link to={`${folderName}`}>[{folderName}]</Link>
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">...</TableCell>
-                    <TableCell className="hidden sm:table-cell">...</TableCell>
-                    <TableCell className="hidden sm:table-cell">...</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow key={0}>
-                  <TableCell>
-                    <Link to={`${getParentDirectory(path)}`}>[...]</Link>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">...</TableCell>
-                  <TableCell className="hidden sm:table-cell">...</TableCell>
-                  <TableCell className="hidden sm:table-cell">...</TableCell>
-                </TableRow>
-              )}
+              {dataFolders.length > 0
+                ? dataFolders.map((folderName, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <Link to={`${getJustFileName(folderName)}`}>
+                          [{getJustFileName(folderName)}]
+                        </Link>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        ...
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        ...
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">
+                        ...
+                      </TableCell>
+                    </TableRow>
+                  ))
+                : ``}
 
               {dataFiles.map((fileName, index) => (
                 <TableRow key={`file-${index}`}>
@@ -175,7 +210,7 @@ export default function ControlTable() {
                     {fileName.ContentType}
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
-                    {fileName.Size}
+                    {formatBytes(fileName.Size)}
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
                     {fileName.LastModified}
