@@ -47,6 +47,14 @@ def getItems(folder=""):
         for obj in page.get('Contents', []):
             key = obj.get('Key')
             if key != folder:  # avoid listing the folder itself as a file
-                files.append(key)
+                file_metadata = {
+                    "Key": key,
+                    "Size": obj.get("Size"),
+                    "LastModified": obj.get("LastModified"),
+                }
+
+                head_obj = s3.head_object(Bucket=bucket_name, Key=key)
+                file_metadata["ContentType"] = head_obj.get("ContentType")
+                files.append(file_metadata)
 
     return folders, files
