@@ -63,8 +63,10 @@ export default function ControlTable() {
   const [isPending, setIsPending] = useState<boolean>(true);
   const [dataFolders, setDataFolders] = useState<string[]>([]);
   const [dataFiles, setDataFiles] = useState<file[]>([]);
+  const [loadtime, setLoadtime] = useState(-1)
 
   useEffect(() => {
+    const start: number = Date.now()
     setIsPending(true);
     fetch(`${API_PATH}/`, {
       method: "POST",
@@ -83,6 +85,8 @@ export default function ControlTable() {
         console.error("Error:", error);
         setIsPending(false);
       });
+
+      setLoadtime(Date.now() - start)
   }, [folder]);
 
   return (
@@ -98,13 +102,17 @@ export default function ControlTable() {
       </div>
 
       <Table>
-        <TableCaption>A list of your recent folders.</TableCaption>
+        <TableCaption>
+            {!isPending &&
+            `Discovered ${dataFolders.length} folder(s) and ${dataFiles.length} file(s) in ${loadtime}ms`
+            }
+        </TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
-            <TableHead>File Type</TableHead>
-            <TableHead>Size</TableHead>
-            <TableHead>Last Modified</TableHead>
+            <TableHead className="hidden sm:table-cell">File Type</TableHead>
+            <TableHead className="hidden sm:table-cell">Size</TableHead>
+            <TableHead className="hidden sm:table-cell">Last Modified</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -114,13 +122,13 @@ export default function ControlTable() {
                 <TableCell>
                   <Skeleton className="h-4 w-32" />
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden sm:table-cell">
                   <Skeleton className="h-4 w-24" />
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden sm:table-cell">
                   <Skeleton className="h-4 w-16" />
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden sm:table-cell">
                   <Skeleton className="h-4 w-24" />
                 </TableCell>
               </TableRow>
@@ -132,33 +140,33 @@ export default function ControlTable() {
                   <TableRow key={index}>
                     <TableCell>
                       <Link to={`${folderName}`}>
-                        <u>{folderName}</u>
+                        [{folderName}]
                       </Link>
                     </TableCell>
-                    <TableCell>...</TableCell>
-                    <TableCell>...</TableCell>
-                    <TableCell>...</TableCell>
+                    <TableCell className="hidden sm:table-cell">...</TableCell>
+                    <TableCell className="hidden sm:table-cell">...</TableCell>
+                    <TableCell className="hidden sm:table-cell">...</TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow key={0}>
                   <TableCell>
                     <Link to={`${getParentDirectory(path)}`}>
-                      <u>..</u>
+                      [...]
                     </Link>
                   </TableCell>
-                  <TableCell>...</TableCell>
-                  <TableCell>...</TableCell>
-                  <TableCell>...</TableCell>
+                  <TableCell className="hidden sm:table-cell">...</TableCell>
+                  <TableCell className="hidden sm:table-cell">...</TableCell>
+                  <TableCell className="hidden sm:table-cell">...</TableCell>
                 </TableRow>
               )}
 
               {dataFiles.map((fileName, index) => (
                 <TableRow key={`file-${index}`}>
                   <TableCell>{getJustFileName(fileName.Key)}</TableCell>
-                  <TableCell>{fileName.ContentType}</TableCell>
-                  <TableCell>{fileName.Size}</TableCell>
-                  <TableCell>{fileName.LastModified}</TableCell>
+                  <TableCell className="hidden sm:table-cell">{fileName.ContentType}</TableCell>
+                  <TableCell className="hidden sm:table-cell">{fileName.Size}</TableCell>
+                  <TableCell className="hidden sm:table-cell">{fileName.LastModified}</TableCell>
                 </TableRow>
               ))}
             </>
