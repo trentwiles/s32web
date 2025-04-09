@@ -2,6 +2,9 @@
 
 A stupid simple S3 bucket browser, built in React + Vite.
 
+![demo](https://github.com/user-attachments/assets/35e86ecb-4097-4f51-8021-4d28fe570831)
+
+
 ## Setup
 
 ### API
