@@ -53,7 +53,8 @@ const getJustFileName = (filePath: string) => {
 
 export default function ControlTable() {
   // i'm too lazy to do an .env for this project
-  const API_PATH = "http://localhost:5000";
+  const API_PATH = import.meta.env.VITE_API_ENDPOINT;
+  const S3_PUBLIC_URL = import.meta.env.VITE_S3_BUCKET_BASE;
 
   const folder = useLocation();
   const path = location.pathname.startsWith("/")
@@ -63,10 +64,10 @@ export default function ControlTable() {
   const [isPending, setIsPending] = useState<boolean>(true);
   const [dataFolders, setDataFolders] = useState<string[]>([]);
   const [dataFiles, setDataFiles] = useState<file[]>([]);
-  const [loadtime, setLoadtime] = useState(-1)
+  const [loadtime, setLoadtime] = useState(-1);
 
   useEffect(() => {
-    const start: number = Date.now()
+    const start: number = Date.now();
     setIsPending(true);
     fetch(`${API_PATH}/`, {
       method: "POST",
@@ -86,7 +87,7 @@ export default function ControlTable() {
         setIsPending(false);
       });
 
-      setLoadtime(Date.now() - start)
+    setLoadtime(Date.now() - start);
   }, [folder]);
 
   return (
@@ -103,16 +104,17 @@ export default function ControlTable() {
 
       <Table>
         <TableCaption>
-            {!isPending &&
-            `Discovered ${dataFolders.length} folder(s) and ${dataFiles.length} file(s) in ${loadtime}ms`
-            }
+          {!isPending &&
+            `Discovered ${dataFolders.length} folder(s) and ${dataFiles.length} file(s) in ${loadtime}ms`}
         </TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead className="hidden sm:table-cell">File Type</TableHead>
             <TableHead className="hidden sm:table-cell">Size</TableHead>
-            <TableHead className="hidden sm:table-cell">Last Modified</TableHead>
+            <TableHead className="hidden sm:table-cell">
+              Last Modified
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -139,9 +141,7 @@ export default function ControlTable() {
                 dataFolders.map((folderName, index) => (
                   <TableRow key={index}>
                     <TableCell>
-                      <Link to={`${folderName}`}>
-                        [{folderName}]
-                      </Link>
+                      <Link to={`${folderName}`}>[{folderName}]</Link>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">...</TableCell>
                     <TableCell className="hidden sm:table-cell">...</TableCell>
@@ -151,9 +151,7 @@ export default function ControlTable() {
               ) : (
                 <TableRow key={0}>
                   <TableCell>
-                    <Link to={`${getParentDirectory(path)}`}>
-                      [...]
-                    </Link>
+                    <Link to={`${getParentDirectory(path)}`}>[...]</Link>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">...</TableCell>
                   <TableCell className="hidden sm:table-cell">...</TableCell>
@@ -163,10 +161,23 @@ export default function ControlTable() {
 
               {dataFiles.map((fileName, index) => (
                 <TableRow key={`file-${index}`}>
-                  <TableCell>{getJustFileName(fileName.Key)}</TableCell>
-                  <TableCell className="hidden sm:table-cell">{fileName.ContentType}</TableCell>
-                  <TableCell className="hidden sm:table-cell">{fileName.Size}</TableCell>
-                  <TableCell className="hidden sm:table-cell">{fileName.LastModified}</TableCell>
+                  <TableCell>
+                    <a
+                      href={`${S3_PUBLIC_URL}/${fileName.Key}`}
+                      target="_blank"
+                    >
+                      {getJustFileName(fileName.Key)}
+                    </a>
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    {fileName.ContentType}
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    {fileName.Size}
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    {fileName.LastModified}
+                  </TableCell>
                 </TableRow>
               ))}
             </>
