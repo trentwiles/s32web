@@ -1,10 +1,14 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
 import bucket
 
 def create_app():
     app = Flask(__name__)
     CORS(app)
+    
+    @app.route("/", methods=["GET"])
+    def default():
+        return Response('Forbidden', content_type="text/plain"), 403
 
 
     @app.route("/", methods=["POST"])
