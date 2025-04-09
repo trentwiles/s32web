@@ -3,10 +3,8 @@ import os
 import boto3
 from botocore.config import Config
 
-# Load .env
 load_dotenv(find_dotenv())
 
-# Fetch credentials
 access_key = os.getenv("S3_ACCESS_KEY")
 secret_key = os.getenv("S3_SECRET_KEY")
 endpoint_url = os.getenv("S3_ENDPOINT_URL")
@@ -15,7 +13,6 @@ bucket_name = os.getenv("S3_BUCKET_NAME")
 if not all([access_key, secret_key, endpoint_url, bucket_name]):
     raise Exception("Missing one or more required environment variables.")
 
-# Initialize client and resource with same credentials
 config = Config(signature_version='s3v4')
 
 s3 = boto3.client(

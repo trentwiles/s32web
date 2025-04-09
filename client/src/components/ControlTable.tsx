@@ -67,6 +67,8 @@ export default function ControlTable() {
   const [loadtime, setLoadtime] = useState(-1);
 
   useEffect(() => {
+    document.title = `Viewing ~/${path}`
+
     const start: number = Date.now();
     setIsPending(true);
     fetch(`${API_PATH}/`, {

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import ControlTable from "./components/ControlTable";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
